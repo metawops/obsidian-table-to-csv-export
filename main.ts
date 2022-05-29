@@ -160,10 +160,10 @@ function htmlToCSV(html: HTMLElement) {
 		var row = [], cols = rows[i].querySelectorAll("td, th");
 				
 		for (var j = 0; j < cols.length; j++) {
-		        row.push(cols[j].innerText);
+		        row.push((cols[j] as HTMLElement).innerText);
         }
 		        
-		data.push(row.join(",")); 		
+		data.push(row.join(","));
 	}
 
    return data.join("\n");

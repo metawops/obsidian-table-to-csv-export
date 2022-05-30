@@ -3,7 +3,7 @@
 	"name": "Table to CSV Exporter",
 	"version": "0.0.1",
 	"minAppVersion": "0.12.0",
-	"description": "This plugin allows to export tables in a preview pane to be exported to CSV files.",
+	"description": "This plugin allows for exporting tables from a pane in reading mode into CSV files.",
 	"author": "Stefan Wolfrum",
 	"authorUrl": "https://twitter.com/metawops",
 	"isDesktopOnly": false

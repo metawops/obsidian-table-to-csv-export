@@ -4,12 +4,18 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Set
 
 interface Table2CSVSettings {
    exportPath: string;
+   baseFilename: string;
    fileNumber: string;
+   sepChar: string;
+   quoteData: boolean;
 }
 
 const DEFAULT_SETTINGS: Table2CSVSettings = {
    exportPath: '',
-   fileNumber: '001'
+   baseFilename: 'table-export-',
+   fileNumber: '001',
+   sepChar: ',',
+   quoteData: false
 }
 
 export default class Table2CSVPlugin extends Plugin {
@@ -41,26 +47,28 @@ export default class Table2CSVPlugin extends Plugin {
                      console.log(view.previewMode.containerEl);
                      
                      // Now convert the tables
-                     const csvString = htmlToCSV(view.previewMode.containerEl);
+                     const csvString = htmlToCSV(view.previewMode.containerEl, this.settings.sepChar, this.settings.quoteData);
                      console.log("And here's the HTML tables converted to CSV:");
                      console.log(csvString);
                      
-                     this.app.vault.create(`./csv-file-${this.settings.fileNumber}.csv`, csvString)
+                     const filename = `${this.settings.baseFilename}-${this.settings.fileNumber}.csv`;
+                     this.app.vault.create(filename, csvString)
    
+                        .then( () => {
+                           let fn: number = +this.settings.fileNumber;
+                           fn++;
+                           let newFileNumberString: string = fn + "";
+                           while (newFileNumberString.length < 3) newFileNumberString = "0" + newFileNumberString;
+                           this.settings.fileNumber = newFileNumberString;
+                           new Notice(`The file ${filename} was successfully created in your vault.`)
+                        })
+
                         .catch( (error) => {
                            console.log(error.message);
                            const errorMessage = `Error: ${error.message}`;
                            new Notice(errorMessage);
                         })
 
-                        .finally( () => {
-                           let fn: number = +this.settings.fileNumber;
-                           fn++;
-                           let newFileNumberString: string = fn + "";
-                           while (newFileNumberString.length < 3) newFileNumberString = "0" + newFileNumberString;
-                           this.settings.fileNumber = newFileNumberString;
-                        })
-                        
                      
                   }
                   else {
@@ -152,7 +160,7 @@ export default class Table2CSVPlugin extends Plugin {
 }
 
 
-function htmlToCSV(html: HTMLElement) {
+function htmlToCSV(html: HTMLElement, sep: string, quote: boolean) {
 	var data = [];
 	var rows = html.querySelectorAll("table tr");
 			
@@ -160,10 +168,14 @@ function htmlToCSV(html: HTMLElement) {
 		var row = [], cols = rows[i].querySelectorAll("td, th");
 				
 		for (var j = 0; j < cols.length; j++) {
-		        row.push((cols[j] as HTMLElement).innerText);
-        }
+         if (!quote) {
+		      row.push((cols[j] as HTMLElement).innerText);
+         } else {
+            row.push('"' + (cols[j] as HTMLElement).innerText + '"');
+         }
+      }
 		        
-		data.push(row.join(","));
+		data.push(row.join(sep));
 	}
 
    return data.join("\n");
@@ -199,6 +211,7 @@ class Table2CSVSettingTab extends PluginSettingTab {
       containerEl.empty();
 
       containerEl.createEl('h2', {text: 'Settings for the Table to CSV Plugin.'});
+      containerEl.createEl('p', {text: 'NOTE: Currently, this plugin will only work reliably when there is only one table in a note.'});
 
       new Setting(containerEl)
          .setName('CSV file export path')
@@ -213,8 +226,20 @@ class Table2CSVSettingTab extends PluginSettingTab {
             }));
 
       new Setting(containerEl)
+         .setName('CSV file base filename')
+         .setDesc('Enter the base filename. The "File Number addendum" gets added after that and finally .csv')
+         .addText(text => text
+            .setPlaceholder('<enter a base filename')
+            .setValue(this.plugin.settings.baseFilename)
+            .onChange(async (value) => {
+               console.log('base filename: ' + value);
+               this.plugin.settings.baseFilename = value;
+               await this.plugin.saveSettings();
+            }));
+            
+      new Setting(containerEl)
          .setName('File Number addendum')
-         .setDesc('This number gets added to the base filename and incremented after each export.')
+         .setDesc('This number gets added to the base filename and incremented after each export. Normally, you shouldn\'t need to edit this.')
          .addText(text => text
             .setPlaceholder('')
             .setValue(this.plugin.settings.fileNumber)
@@ -224,7 +249,30 @@ class Table2CSVSettingTab extends PluginSettingTab {
                await this.plugin.saveSettings();
             }));
       
-
+      new Setting(containerEl)
+         .setName('Data fields separation character/string')
+         .setDesc('This character (or string) will be put between each cell\'s data. Defaults to a comma. Special characters (like \\t for a TAB don\'t work yet).')
+         .addText(text => text
+            .setPlaceholder('<enter a separation character or string>')
+            .setValue(this.plugin.settings.sepChar)
+            .onChange(async (value) => {
+               console.log('sepChar: ' + value);
+               this.plugin.settings.sepChar = value;
+               await this.plugin.saveSettings();
+            }));
+   
+      new Setting(containerEl)
+         .setName('Quote data')
+         .setDesc('Do you want quotation marks around each cell\'s data?.')
+         .addToggle( toggle => toggle
+            .setValue(this.plugin.settings.quoteData)
+            .onChange(async (value) => {
+               console.log('quote data toggle: ' + value);
+               this.plugin.settings.quoteData = value;
+               await this.plugin.saveSettings();
+            }));
+   
+      
 
    }
 }

@@ -1,5 +1,8 @@
 # vscode
 .vscode 
+.editorconfig
+.eslintignore
+.eslintrc
 
 # Intellij
 *.iml

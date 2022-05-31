@@ -15,22 +15,36 @@ But the plugin can export any table into a CSV file, even those you "hard-coded"
 My plugin allows you to configure a few things in its settings:
 
 * The base filename of the CSV file.
+
    This is the first part of the filename of the CSV file you're about to save.
+
    Default: `table-export`
+
 * A file number addition
+
    This gets added to the base filename (after a hyphen). After this, the extension `.csv` is added.
    This number gets incremented by one after each succesful export and resetted to 001 after reaching 999.
    Normally you won't need to interfere with this in the settings but you can change it if you want. 
    **But be careful!** Don't mess with this. Don't change this to text or something different than numbers. And stay in the ### scheme (three ciphers max., leading zeroes).
+
    Default: `001`
+
 * The separation character
+
    Here you can change the character that separates the data fields in the CSV file. You can enter more than one character here, too, if you like. Entering a TAB character (as `\t` or otherwise) is currently not possible. But you might have the need to change the default comma to a semicolon if your data contains commas.
+
    Default: `,`
+
 * Quote data
+
    Switch this on if you want the data cells in the CSV file to be enclosed in double quote marks. Currently, you can't change that quote character. It's `"` for now.
+
    Default: `off`
+
 * Copy to clipboard, too
+
    Optionally you can copy the CSV string to the clipboard, too.
+   
    Default: `off`
 
 ## Usage

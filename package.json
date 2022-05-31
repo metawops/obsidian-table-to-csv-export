@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-table-to-csv-exporter",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "This plugin allows to export tables in a preview pane to be exported to CSV files.",
 	"main": "main.js",
 	"scripts": {

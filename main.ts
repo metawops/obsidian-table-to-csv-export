@@ -37,8 +37,8 @@ export default class Table2CSVPlugin extends Plugin {
       await this.loadSettings();
 
       this.addCommand({
-         id: 'table-to-csv-export',
-         name: 'Export all tables to CSV files',
+         id: 'obsidian-table-to-csv-exporter',
+         name: 'Export table to CSV file',
          checkCallback: (checking: boolean) => {
 
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
@@ -51,7 +51,7 @@ export default class Table2CSVPlugin extends Plugin {
                      // Now convert the tables
                      const csvString = htmlToCSV(view.previewMode.containerEl, this.settings.sepChar, this.settings.quoteData);
                      
-                     const filename = `${this.settings.exportPath}${this.settings.baseFilename}-${this.settings.fileNumber}.csv`;
+                     const filename = `${this.settings.baseFilename}-${this.settings.fileNumber}.csv`;
                      this.app.vault.create(filename, csvString)
                         .then( () => {
                            // increment the file number addition string

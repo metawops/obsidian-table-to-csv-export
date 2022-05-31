@@ -8,14 +8,16 @@ interface Table2CSVSettings {
    fileNumber: string;
    sepChar: string;
    quoteData: boolean;
+   saveToClipboardToo: boolean;
 }
 
 const DEFAULT_SETTINGS: Table2CSVSettings = {
-   exportPath: '',
-   baseFilename: 'table-export-',
+   exportPath: './',
+   baseFilename: 'table-export',
    fileNumber: '001',
    sepChar: ',',
-   quoteData: false
+   quoteData: false,
+   saveToClipboardToo: false
 }
 
 export default class Table2CSVPlugin extends Plugin {
@@ -51,7 +53,7 @@ export default class Table2CSVPlugin extends Plugin {
                      console.log("And here's the HTML tables converted to CSV:");
                      console.log(csvString);
                      
-                     const filename = `${this.settings.baseFilename}-${this.settings.fileNumber}.csv`;
+                     const filename = `${this.settings.exportPath}${this.settings.baseFilename}-${this.settings.fileNumber}.csv`;
                      this.app.vault.create(filename, csvString)
    
                         .then( () => {
@@ -60,7 +62,19 @@ export default class Table2CSVPlugin extends Plugin {
                            let newFileNumberString: string = fn + "";
                            while (newFileNumberString.length < 3) newFileNumberString = "0" + newFileNumberString;
                            this.settings.fileNumber = newFileNumberString;
-                           new Notice(`The file ${filename} was successfully created in your vault.`)
+                           if (this.settings.saveToClipboardToo) {
+                              navigator.clipboard
+                                 .writeText(csvString)
+                                 .then(() => {
+                                    console.log(`"${csvString}" was copied to clipboard.`);
+                                 })
+                                 .catch((err) => {
+                                    console.log(`Error copying text to clipboard: ${err}`);
+                                 });
+                              new Notice(`The file ${filename} was successfully created in your vault and the contents was copied to the clipboard.`)   
+                           } else {
+                              new Notice(`The file ${filename} was successfully created in your vault.`)
+                           }
                         })
 
                         .catch( (error) => {
@@ -85,12 +99,12 @@ export default class Table2CSVPlugin extends Plugin {
 
 
       // This creates an icon in the left ribbon.
-      const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
+      //const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
          // Called when the user clicks the icon.
-         new Notice('This is a notice!');
-      });
+         //new Notice('This is a notice!');
+      //});
       // Perform additional things with the ribbon
-      ribbonIconEl.addClass('my-plugin-ribbon-class');
+      //ribbonIconEl.addClass('my-plugin-ribbon-class');
 
       // This adds a status bar item to the bottom of the app. Does not work on mobile apps.
       // const statusBarItemEl = this.addStatusBarItem();
@@ -211,19 +225,20 @@ class Table2CSVSettingTab extends PluginSettingTab {
       containerEl.empty();
 
       containerEl.createEl('h2', {text: 'Settings for the Table to CSV Plugin.'});
-      containerEl.createEl('p', {text: 'NOTE: Currently, this plugin will only work reliably when there is only one table in a note.'});
+      containerEl.createEl('p', {text: 'NOTE #1: Currently, this plugin will only work reliably when there is only one table in a note.'});
+      containerEl.createEl('p', {text: 'NOTE #2: Currently, the exported CSV files are saved inside your vault main folder.'});
 
-      new Setting(containerEl)
-         .setName('CSV file export path')
-         .setDesc('Enter the path where the exported CSV file should be saved. If no path is set the CSV file will be saved into your vault folder.')
-         .addText(text => text
-            .setPlaceholder('<enter a path>')
-            .setValue(this.plugin.settings.exportPath)
-            .onChange(async (value) => {
-               console.log('path: ' + value);
-               this.plugin.settings.exportPath = value;
-               await this.plugin.saveSettings();
-            }));
+      // new Setting(containerEl)
+      //    .setName('CSV file export path')
+      //    .setDesc('Enter the path where the exported CSV file should be saved. If no path is set the CSV file will be saved into your vault folder.')
+      //    .addText(text => text
+      //       .setPlaceholder('<enter a path>')
+      //       .setValue(this.plugin.settings.exportPath)
+      //       .onChange(async (value) => {
+      //          console.log('path: ' + value);
+      //          this.plugin.settings.exportPath = value;
+      //          await this.plugin.saveSettings();
+      //       }));
 
       new Setting(containerEl)
          .setName('CSV file base filename')
@@ -263,7 +278,7 @@ class Table2CSVSettingTab extends PluginSettingTab {
    
       new Setting(containerEl)
          .setName('Quote data')
-         .setDesc('Do you want quotation marks around each cell\'s data?.')
+         .setDesc('Do you want quotation marks around each cell\'s data?')
          .addToggle( toggle => toggle
             .setValue(this.plugin.settings.quoteData)
             .onChange(async (value) => {
@@ -272,7 +287,18 @@ class Table2CSVSettingTab extends PluginSettingTab {
                await this.plugin.saveSettings();
             }));
    
+      new Setting(containerEl)
+         .setName('Copy to clipboard, too')
+         .setDesc('Do you want to copy the contents of the CSV file to the system clipboard, too?')
+         .addToggle( toggle => toggle
+            .setValue(this.plugin.settings.saveToClipboardToo)
+            .onChange(async (value) => {
+               console.log('save to clipboard, too: ' + value);
+               this.plugin.settings.saveToClipboardToo = value;
+               await this.plugin.saveSettings();
+            }));
       
+         
 
    }
 }

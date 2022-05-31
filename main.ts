@@ -1,6 +1,15 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+// ----------------------------------------------------------------------------------------
+// File       : main.ts
+// Author     : Stefan Wolfrum (@metawops)
+// Date       : 2022-05-27
+// Last Update: 2022-05-31
+// Description: Implementation of my very first Obsidian plugin.
+//              It allows to export rendered HTML tables (i.e. from a pane in reading mode)
+//              to be exported to a CSV file and optionally to the clipboard, too.
+//              Purely based on the Obsidian sample plugin.
+// ----------------------------------------------------------------------------------------
 
-// Remember to rename these classes and interfaces!
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface Table2CSVSettings {
    exportPath: string;
@@ -24,7 +33,7 @@ export default class Table2CSVPlugin extends Plugin {
    settings: Table2CSVSettings;
 
    async onload() {
-      console.log("In onload().");
+      
       await this.loadSettings();
 
       this.addCommand({
@@ -34,56 +43,49 @@ export default class Table2CSVPlugin extends Plugin {
 
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
             
-            // const markdownView = this.app.workspace.activeLeaf.view as MarkdownView;
-            // const livePreviewActive: boolean = markdownView.getState().field(editorLivePreviewField);
-
             if (view) {
                if (!checking) {
                   // Here we can actually start with our work
-                  console.log("table-to-csv-export command triggered.")
                   const viewMode = view.getMode();
-                  console.log("viewMode =", viewMode);
                   if (viewMode=="preview") {
-                     console.log("We're in reading mode and can now work on the HTML tables! :-)");
-                     console.log("Here's the HTML of the active pane in reading mode:");
-                     console.log(view.previewMode.containerEl);
-                     
                      // Now convert the tables
                      const csvString = htmlToCSV(view.previewMode.containerEl, this.settings.sepChar, this.settings.quoteData);
-                     console.log("And here's the HTML tables converted to CSV:");
-                     console.log(csvString);
                      
                      const filename = `${this.settings.exportPath}${this.settings.baseFilename}-${this.settings.fileNumber}.csv`;
                      this.app.vault.create(filename, csvString)
-   
                         .then( () => {
+                           // increment the file number addition string
+                           // first, convert the current string to a number:
                            let fn: number = +this.settings.fileNumber;
+                           // then increment the number:
                            fn++;
+                           // don't allow more that 999; restart with 001 in that case:
+                           if (fn==1000) fn = 1;
+                           // convert the number to a string again:
                            let newFileNumberString: string = fn + "";
+                           // add leading zeroes to the string:
                            while (newFileNumberString.length < 3) newFileNumberString = "0" + newFileNumberString;
                            this.settings.fileNumber = newFileNumberString;
                            if (this.settings.saveToClipboardToo) {
                               navigator.clipboard
                                  .writeText(csvString)
-                                 .then(() => {
-                                    console.log(`"${csvString}" was copied to clipboard.`);
+                                 .then(() => {                                    
+                                    new Notice(`The file ${filename} was successfully created in your vault. The contents was also copied to the clipboard.`);
                                  })
                                  .catch((err) => {
-                                    console.log(`Error copying text to clipboard: ${err}`);
+                                    new Notice('There was an error with copying the contents to the clipboard.');
                                  });
-                              new Notice(`The file ${filename} was successfully created in your vault and the contents was copied to the clipboard.`)   
+                              
                            } else {
                               new Notice(`The file ${filename} was successfully created in your vault.`)
                            }
                         })
 
                         .catch( (error) => {
-                           console.log(error.message);
                            const errorMessage = `Error: ${error.message}`;
                            new Notice(errorMessage);
                         })
 
-                     
                   }
                   else {
                      new Notice('This command only works on panes in reading mode! – No CSV files were written.');
@@ -98,79 +100,20 @@ export default class Table2CSVPlugin extends Plugin {
       });
 
 
-      // This creates an icon in the left ribbon.
-      //const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
-         // Called when the user clicks the icon.
-         //new Notice('This is a notice!');
-      //});
-      // Perform additional things with the ribbon
-      //ribbonIconEl.addClass('my-plugin-ribbon-class');
-
-      // This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-      // const statusBarItemEl = this.addStatusBarItem();
-      // statusBarItemEl.setText('Status Bar Text');
-
-      // This adds a simple command that can be triggered anywhere
-      // this.addCommand({
-      //    id: 'open-sample-modal-simple',
-      //    name: 'Open sample modal (simple)',
-      //    callback: () => {
-      //       new SampleModal(this.app).open();
-      //    }
-      // });
-      // This adds an editor command that can perform some operation on the current editor instance
-      // this.addCommand({
-      //    id: 'sample-editor-command',
-      //    name: 'Sample editor command',
-      //    editorCallback: (editor: Editor, view: MarkdownView) => {
-      //       console.log(editor.getSelection());
-      //       editor.replaceSelection('Sample Editor Command');
-      //    }
-      // });
-      // This adds a complex command that can check whether the current state of the app allows execution of the command
-      // this.addCommand({
-      //    id: 'open-sample-modal-complex',
-      //    name: 'Open sample modal (complex)',
-      //    checkCallback: (checking: boolean) => {
-      //       // Conditions to check
-      //       const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-      //       if (markdownView) {
-      //          // If checking is true, we're simply "checking" if the command can be run.
-      //          // If checking is false, then we want to actually perform the operation.
-      //          if (!checking) {
-      //             new SampleModal(this.app).open();
-      //          }
-
-      //          // This command will only show up in Command Palette when the check function returns true
-      //          return true;
-      //       }
-      //    }
-      // });
-
       // This adds a settings tab so the user can configure various aspects of the plugin
       this.addSettingTab(new Table2CSVSettingTab(this.app, this));
-
-      // If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-      // Using this function will automatically remove the event listener when this plugin is disabled.
-      // this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-      //    console.log('click', evt);
-      // });
-
-      // When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-      //this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
    }
 
-    onunload() {
-       console.log("In onunload().");
-    }
+   onunload() {
+   }
 
-    async loadSettings() {
-       this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-    }
+   async loadSettings() {
+      this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+   }
 
-    async saveSettings() {
-       await this.saveData(this.settings);
-    }
+   async saveSettings() {
+      await this.saveData(this.settings);
+   }
 }
 
 
@@ -195,22 +138,6 @@ function htmlToCSV(html: HTMLElement, sep: string, quote: boolean) {
    return data.join("\n");
 }
 
-// class SampleModal extends Modal {
-//     constructor(app: App) {
-//        super(app);
-//     }
-
-//    onOpen() {
-//       const {contentEl} = this;
-//       contentEl.setText('Woah!');
-//    }
-
-//    onClose() {
-//       const {contentEl} = this;
-//       contentEl.empty();
-//    }
-// }
-
 class Table2CSVSettingTab extends PluginSettingTab {
    plugin: Table2CSVPlugin;
 
@@ -228,6 +155,8 @@ class Table2CSVSettingTab extends PluginSettingTab {
       containerEl.createEl('p', {text: 'NOTE #1: Currently, this plugin will only work reliably when there is only one table in a note.'});
       containerEl.createEl('p', {text: 'NOTE #2: Currently, the exported CSV files are saved inside your vault main folder.'});
 
+      // Being able to set a path for the exports will be a future addition
+      // ------------------------------------------------------------------
       // new Setting(containerEl)
       //    .setName('CSV file export path')
       //    .setDesc('Enter the path where the exported CSV file should be saved. If no path is set the CSV file will be saved into your vault folder.')
@@ -247,7 +176,7 @@ class Table2CSVSettingTab extends PluginSettingTab {
             .setPlaceholder('<enter a base filename')
             .setValue(this.plugin.settings.baseFilename)
             .onChange(async (value) => {
-               console.log('base filename: ' + value);
+               //console.log('base filename: ' + value);
                this.plugin.settings.baseFilename = value;
                await this.plugin.saveSettings();
             }));
@@ -259,7 +188,7 @@ class Table2CSVSettingTab extends PluginSettingTab {
             .setPlaceholder('')
             .setValue(this.plugin.settings.fileNumber)
             .onChange(async (value) => {
-               console.log('fileNumber: ' + value);
+               //console.log('fileNumber: ' + value);
                this.plugin.settings.fileNumber = value;
                await this.plugin.saveSettings();
             }));
@@ -271,7 +200,7 @@ class Table2CSVSettingTab extends PluginSettingTab {
             .setPlaceholder('<enter a separation character or string>')
             .setValue(this.plugin.settings.sepChar)
             .onChange(async (value) => {
-               console.log('sepChar: ' + value);
+               //console.log('sepChar: ' + value);
                this.plugin.settings.sepChar = value;
                await this.plugin.saveSettings();
             }));
@@ -282,7 +211,7 @@ class Table2CSVSettingTab extends PluginSettingTab {
          .addToggle( toggle => toggle
             .setValue(this.plugin.settings.quoteData)
             .onChange(async (value) => {
-               console.log('quote data toggle: ' + value);
+               //console.log('quote data toggle: ' + value);
                this.plugin.settings.quoteData = value;
                await this.plugin.saveSettings();
             }));
@@ -293,12 +222,9 @@ class Table2CSVSettingTab extends PluginSettingTab {
          .addToggle( toggle => toggle
             .setValue(this.plugin.settings.saveToClipboardToo)
             .onChange(async (value) => {
-               console.log('save to clipboard, too: ' + value);
+               //console.log('save to clipboard, too: ' + value);
                this.plugin.settings.saveToClipboardToo = value;
                await this.plugin.saveSettings();
             }));
-      
-         
-
    }
 }

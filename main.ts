@@ -251,7 +251,7 @@ class Table2CSVSettingTab extends PluginSettingTab {
       
       new Setting(containerEl)
          .setName('Data fields separation character/string')
-         .setDesc('This character (or string) will be put between each cell\'s data. Defaults to a comma. Special characters (like \\t for a TAB don\'t work yet).')
+         .setDesc('This character (or string) will be put between each cell\'s data. Defaults to a comma. Special characters (like \\t for a TAB) don\'t work yet.')
          .addText(text => text
             .setPlaceholder('<enter a separation character or string>')
             .setValue(this.plugin.settings.sepChar)

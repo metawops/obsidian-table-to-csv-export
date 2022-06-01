@@ -6,7 +6,7 @@ This is my very first attempt in writing a plugin for [Obsidian](https://obsidia
 
 The purpose of this plugin is to be able to export table data from a pane in reading mode into a CSV file.
 
-Background: The fabulous Dataview plugin for Obsidian allows to dynamicall create tables from an SQL-like query over your notes' metadata.
+Background: The fabulous Dataview plugin for Obsidian allows to dynamically create tables from an SQL-like query over your notes' metadata.
 I wanted to be able to further use this created data in external applications, like MS Power BI, to create visualizations of that data.
 But the plugin can export any table into a CSV file, even those you "hard-coded" in Markdown (if that makes sense for you).
 

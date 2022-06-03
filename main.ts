@@ -51,40 +51,46 @@ export default class Table2CSVPlugin extends Plugin {
                      // Now convert the tables
                      const csvString = htmlToCSV(view.previewMode.containerEl, this.settings.sepChar, this.settings.quoteData);
                      
-                     const filename = `${this.settings.baseFilename}-${this.settings.fileNumber}.csv`;
-                     this.app.vault.create(filename, csvString)
-                        .then( () => {
-                           // increment the file number addition string
-                           // first, convert the current string to a number:
-                           let fn: number = +this.settings.fileNumber;
-                           // then increment the number:
-                           fn++;
-                           // don't allow more that 999; restart with 001 in that case:
-                           if (fn==1000) fn = 1;
-                           // convert the number to a string again:
-                           let newFileNumberString: string = fn + "";
-                           // add leading zeroes to the string:
-                           while (newFileNumberString.length < 3) newFileNumberString = "0" + newFileNumberString;
-                           this.settings.fileNumber = newFileNumberString;
-                           if (this.settings.saveToClipboardToo) {
-                              navigator.clipboard
-                                 .writeText(csvString)
-                                 .then(() => {                                    
-                                    new Notice(`The file ${filename} was successfully created in your vault. The contents was also copied to the clipboard.`);
-                                 })
-                                 .catch((err) => {
-                                    new Notice('There was an error with copying the contents to the clipboard.');
-                                 });
-                              
-                           } else {
-                              new Notice(`The file ${filename} was successfully created in your vault.`)
-                           }
-                        })
+                     // TODO: prüfen, ob csvString leer oder nicht! Nur wenn nicht, Datei anlegen etc.
+                     if (csvString.length > 0) {
+                        const filename = `${this.settings.baseFilename}-${this.settings.fileNumber}.csv`;
+                        this.app.vault.create(filename, csvString)
+                           .then( () => {
+                              // increment the file number addition string
+                              // first, convert the current string to a number:
+                              let fn: number = +this.settings.fileNumber;
+                              // then increment the number:
+                              fn++;
+                              // don't allow more that 999; restart with 001 in that case:
+                              if (fn==1000) fn = 1;
+                              // convert the number to a string again:
+                              let newFileNumberString: string = fn + "";
+                              // add leading zeroes to the string:
+                              while (newFileNumberString.length < 3) newFileNumberString = "0" + newFileNumberString;
+                              this.settings.fileNumber = newFileNumberString;
+                              if (this.settings.saveToClipboardToo) {
+                                 navigator.clipboard
+                                    .writeText(csvString)
+                                    .then(() => {                                    
+                                       new Notice(`The file ${filename} was successfully created in your vault. The contents was also copied to the clipboard.`);
+                                    })
+                                    .catch((err) => {
+                                       new Notice('There was an error with copying the contents to the clipboard.');
+                                    });
+                                 
+                              } else {
+                                 new Notice(`The file ${filename} was successfully created in your vault.`)
+                              }
+                           })
 
-                        .catch( (error) => {
-                           const errorMessage = `Error: ${error.message}`;
-                           new Notice(errorMessage);
-                        })
+                           .catch( (error) => {
+                              const errorMessage = `Error: ${error.message}`;
+                              new Notice(errorMessage);
+                           })
+                     }
+                     else {
+                        new Notice(`No table was found. No CSV file was written.`);
+                     }
 
                   }
                   else {
@@ -119,23 +125,31 @@ export default class Table2CSVPlugin extends Plugin {
 
 function htmlToCSV(html: HTMLElement, sep: string, quote: boolean) {
 	var data = [];
-	var rows = html.querySelectorAll("table tr");
+	var table = html.querySelector("table"); 
+   console.log(`htmlToCSV::table: ${table}`);
 			
-	for (var i = 0; i < rows.length; i++) {
-		var row = [], cols = rows[i].querySelectorAll("td, th");
-				
-		for (var j = 0; j < cols.length; j++) {
-         if (!quote) {
-		      row.push((cols[j] as HTMLElement).innerText);
-         } else {
-            row.push('"' + (cols[j] as HTMLElement).innerText + '"');
+   if (table) {
+      var rows = table.rows;
+      console.log(`htmlToCSV::rows: ${rows}`);
+      for (var i = 0; i < rows.length; i++) {
+         var row = [], cols = rows[i].querySelectorAll("td, th");
+               
+         for (var j = 0; j < cols.length; j++) {
+            if (!quote) {
+               row.push((cols[j] as HTMLElement).innerText);
+            } else {
+               row.push('"' + (cols[j] as HTMLElement).innerText + '"');
+            }
          }
+                 
+         data.push(row.join(sep));
       }
-		        
-		data.push(row.join(sep));
-	}
-
-   return data.join("\n");
+   }
+   console.log(`htmlToCSV::data.length: ${data.length}`);
+   if (data.length > 0)
+      return data.join("\n");
+   else
+      return "";
 }
 
 class Table2CSVSettingTab extends PluginSettingTab {

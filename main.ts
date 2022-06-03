@@ -166,8 +166,7 @@ class Table2CSVSettingTab extends PluginSettingTab {
       containerEl.empty();
 
       containerEl.createEl('h2', {text: 'Settings for the Table to CSV Plugin.'});
-      containerEl.createEl('p', {text: 'NOTE #1: Currently, this plugin will only work reliably when there is only one table in a note.'});
-      containerEl.createEl('p', {text: 'NOTE #2: Currently, the exported CSV files are saved inside your vault main folder.'});
+      containerEl.createEl('p', {text: 'NOTE: Currently, the exported CSV files are saved inside your vault main folder.'});
 
       // Being able to set a path for the exports will be a future addition
       // ------------------------------------------------------------------

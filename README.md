@@ -18,7 +18,7 @@ My plugin allows you to configure a few things in its settings:
 
    This is the first part of the filename of the CSV file you're about to save.
 
-   Default: `table-export`
+   **Default**: `table-export`
 
 * A file number addition
 
@@ -29,25 +29,31 @@ My plugin allows you to configure a few things in its settings:
    It may become neccessary to either change this number manually or to delete/rename/move files out of your vault folder.  
    No worries, though: the plugin never overwrites any files and warns you if a file already exists.
 
-   Default: `001`
+   **Default**: `001`
 
 * The separation character
 
-   Here you can change the character that separates the data fields in the CSV file. You can enter more than one character here, too, if you like. Entering a TAB character (as `\t` or otherwise) is currently not possible. But you might have the need to change the default comma to a semicolon if your data contains commas.
+   Here you can select the character that separates the data fields in the CSV file. The dropdown box contains the usual suspects like comma, semicolon and tab. But there are some unusual choices as well.
 
-   Default: `,`
+   **Default**: `;`
 
 * Quote data
 
-   Switch this on if you want the data cells in the CSV file to be enclosed in double quote marks. Currently, you can't change that quote character. It's `"` for now.
+   If you want the data cells in the CSV file to be enclosed in quotation marks you can choose to do so here. In the dropdown box you can choose between either double quotation marks (`"`), single quotation marks (`'`) or not to quote data at all.
 
-   Default: `off`
+   **Default**: no quoting
+
+* Handling of CR/LF in data
+
+   In some rare cases you might have return (CR) or linefeed (LF) characters inside of data fields/cells. This will break the CSV file. With this setting you can select how you want to handle these characters. You can either simply strip them, replace them with a single space character or replace them with the fixed string `[CR]`so that you later can still see that there once _was_ some kind of return character in your data.
+
+   **Default**: Replace all CR & LF characters with one space
 
 * Copy to clipboard, too
 
    Optionally you can copy the CSV string to the clipboard, too.
    
-   Default: `off`
+   **Default**: `off`
 
 ## Usage
 
@@ -57,12 +63,10 @@ The plugin works on mobile, too. (Tested on iPadOS only, though.)
 
 ## Current limitations
 
-Of course, there's always room for improvement. **Currently, there are the following limitations/restrictions**:
+Of course, there's always room for improvement. **As of version 0.1.4, there are the following limitations/restrictions**:
 
 * The plugin currently exports only the first table that it finds in the reading mode of a note.
 * The plugin saves the CSV file directly into you vault's main folder. A feature to select another folder inside your vault will be added later.
-* It's currently not possible to use a TAB character as a separation character.
-* The quotation character is currently the double quote character `"` and cannot be changed.
 
 ## Thanks
 
@@ -76,3 +80,9 @@ I'd like to thank several people here. Without them this plugin wouldn't have co
 
 Please leave feedback here in the GitHub discussions or file a new issue if you found a bug or have a feature request.
 You can reach me via Twitter, too: [@metawops](https://twitter.com/metawops)
+
+## Sponsoring
+
+If this plugin adds value for you and you would like to help support continued development, please consider sponsoring this repository via [GitHub Sponsors](https://github.com/sponsors), [PayPal](https://paypal.me/stefanwolfrum) or [Buy me a coffee](https://www.buymeacoffee.com/metawops).
+
+Made with ❤️ in Bonn, Germany.

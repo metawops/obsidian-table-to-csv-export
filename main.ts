@@ -26,7 +26,7 @@ const DEFAULT_SETTINGS: Table2CSVSettings = {
    baseFilename: 'table-export',
    fileNumber: '001',
    sepChar: 'sepChar-semicolon',
-   quoteDataChar: 'quoteChar-doubleQuotes',
+   quoteDataChar: 'quoteChar-noQuote',
    saveToClipboardToo: false,
    removeCRLF: 'removeCRLF-space'
 }
@@ -282,7 +282,7 @@ class Table2CSVSettingTab extends PluginSettingTab {
    
       new Setting(containerEl)
          .setName('Handling of CR/LF in data')
-         .setDesc('Chose how to handle the occurance of return and linefeed characters in data cells.')
+         .setDesc('Choose how to handle the occurance of return and linefeed characters in data cells.')
          .addDropdown( dropdown => dropdown
             .addOption('removeCRLF-clear', 'Remove all CR & LF characters')
             .addOption('removeCRLF-space', 'Replace all CR & LF characters with one space')

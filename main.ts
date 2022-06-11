@@ -16,7 +16,7 @@ interface Table2CSVSettings {
    baseFilename: string;
    fileNumber: string;
    sepChar: string;
-   quoteData: boolean;
+   quoteDataChar: string;
    saveToClipboardToo: boolean;
    removeCRLF: string;
 }
@@ -25,8 +25,8 @@ const DEFAULT_SETTINGS: Table2CSVSettings = {
    exportPath: './',
    baseFilename: 'table-export',
    fileNumber: '001',
-   sepChar: ',',
-   quoteData: false,
+   sepChar: 'sepChar-semicolon',
+   quoteDataChar: 'quoteChar-doubleQuotes',
    saveToClipboardToo: false,
    removeCRLF: 'removeCRLF-space'
 }
@@ -51,9 +51,9 @@ export default class Table2CSVPlugin extends Plugin {
                   const viewMode = view.getMode();
                   if (viewMode=="preview") {
                      // Now convert the tables
-                     const csvString = htmlToCSV(view.previewMode.containerEl, this.settings.sepChar, this.settings.quoteData, this.settings.removeCRLF);
-                     
-                     // TODO: prüfen, ob csvString leer oder nicht! Nur wenn nicht, Datei anlegen etc.
+                     const csvString = htmlToCSV(view.previewMode.containerEl, this.settings.sepChar, this.settings.quoteDataChar, this.settings.removeCRLF);
+
+                     // If csvString is not empty, create file:
                      if (csvString.length > 0) {
                         const filename = `${this.settings.baseFilename}-${this.settings.fileNumber}.csv`;
                         this.app.vault.create(filename, csvString)
@@ -127,7 +127,7 @@ export default class Table2CSVPlugin extends Plugin {
 }
 
 
-function htmlToCSV(html: HTMLElement, sep: string, quote: boolean, removeCRLF: string) {
+function htmlToCSV(html: HTMLElement, sepMode: string, quoteChar: string, removeCRLF: string) {
 	var data = [];
 	var table = html.querySelector("table"); 
    //console.log(`htmlToCSV::table: ${table}`);
@@ -152,12 +152,39 @@ function htmlToCSV(html: HTMLElement, sep: string, quote: boolean, removeCRLF: s
 
             // handle the quoting of data cells:
             // for now it's just the hard-coded character "
-            if (quote) cellContent = '"' + cellContent + '"';
-
+            if (quoteChar=='quoteChar-doubleQuotes') {
+               cellContent = '"' + cellContent + '"';
+            } else if (quoteChar=='quoteChar-singleQuotes') {
+               cellContent = "'" + cellContent + "'";
+            }
             row.push(cellContent);
          }
-                 
-         data.push(row.join(sep));
+         
+         var sepChar = ';';
+         switch(sepMode) {
+            case 'sepChar-semicolon': 
+               sepChar = ';';
+               break;
+            case 'sepChar-comma': 
+               sepChar = ',';
+               break;
+            case 'sepChar-tab': 
+               sepChar = '\t';
+               break;
+            case 'sepChar-pipe': 
+               sepChar = '|';
+               break;
+            case 'sepChar-tilde': 
+               sepChar = '~';
+               break;
+            case 'sepChar-caret': 
+               sepChar = '^';
+               break;
+            case 'sepChar-colon': 
+               sepChar = ':';
+               break;
+         }
+         data.push(row.join(sepChar));
       }
    }
    //console.log(`htmlToCSV::data.length: ${data.length}`);
@@ -223,9 +250,15 @@ class Table2CSVSettingTab extends PluginSettingTab {
       
       new Setting(containerEl)
          .setName('Data fields separation character/string')
-         .setDesc('This character (or string) will be put between each cell\'s data. Defaults to a comma. Special characters (like \\t for a TAB) don\'t work yet.')
-         .addText(text => text
-            .setPlaceholder('<enter a separation character or string>')
+         .setDesc('This character will be put between each cell\'s data. Defaults to a semicolon.')
+         .addDropdown(dropdown => dropdown
+            .addOption('sepChar-semicolon', '; (semicolon)')
+            .addOption('sepChar-comma', ', (comma)')
+            .addOption('sepChar-tab', '\\t (tab)')
+            .addOption('sepChar-pipe', '| (pipe)')
+            .addOption('sepChar-tilde', '~ (tilde)')
+            .addOption('sepChar-caret', '^ (caret)')
+            .addOption('sepChar-colon', ': (colon)')
             .setValue(this.plugin.settings.sepChar)
             .onChange(async (value) => {
                //console.log('sepChar: ' + value);
@@ -235,26 +268,18 @@ class Table2CSVSettingTab extends PluginSettingTab {
    
       new Setting(containerEl)
          .setName('Quote data')
-         .setDesc('Do you want quotation marks (") around each cell\'s data?')
-         .addToggle( toggle => toggle
-            .setValue(this.plugin.settings.quoteData)
+         .setDesc('Do you want quotation marks around each cell\'s data?')
+         .addDropdown( dropdown => dropdown
+            .addOption('quoteChar-noQuote', 'Don\'t quote data')
+            .addOption('quoteChar-doubleQuotes', 'Quote data with double quote character (")')
+            .addOption('quoteChar-singleQuotes', 'Quote data with single quote character (\')')
+            .setValue(this.plugin.settings.quoteDataChar)
             .onChange(async (value) => {
                //console.log('quote data toggle: ' + value);
-               this.plugin.settings.quoteData = value;
+               this.plugin.settings.quoteDataChar = value;
                await this.plugin.saveSettings();
             }));
    
-      new Setting(containerEl)
-         .setName('Copy to clipboard, too')
-         .setDesc('Do you want to copy the contents of the CSV file to the system clipboard, too?')
-         .addToggle( toggle => toggle
-            .setValue(this.plugin.settings.saveToClipboardToo)
-            .onChange(async (value) => {
-               //console.log('save to clipboard, too: ' + value);
-               this.plugin.settings.saveToClipboardToo = value;
-               await this.plugin.saveSettings();
-            }));
-
       new Setting(containerEl)
          .setName('Handling of CR/LF in data')
          .setDesc('Chose how to handle the occurance of return and linefeed characters in data cells.')
@@ -267,6 +292,17 @@ class Table2CSVSettingTab extends PluginSettingTab {
                this.plugin.settings.removeCRLF = value;
                await this.plugin.saveSettings();
             }))
+
+      new Setting(containerEl)
+         .setName('Copy to clipboard, too')
+         .setDesc('Do you want to copy the contents of the CSV file to the system clipboard, too?')
+         .addToggle( toggle => toggle
+            .setValue(this.plugin.settings.saveToClipboardToo)
+            .onChange(async (value) => {
+               //console.log('save to clipboard, too: ' + value);
+               this.plugin.settings.saveToClipboardToo = value;
+               await this.plugin.saveSettings();
+            }));
    
    }
 }

@@ -14,13 +14,13 @@ But the plugin can export any table into a CSV file, even those you "hard-coded"
 
 My plugin allows you to configure a few things in its settings:
 
-* The base filename of the CSV file.
+* **The base filename of the CSV file**
 
    This is the first part of the filename of the CSV file you're about to save.
 
    **Default**: `table-export`
 
-* A file number addition
+* **A file number addition**
 
    This gets added to the base filename (after a hyphen). After this, the extension `.csv` is added.  
    This number gets incremented by one after each succesful export and resetted to 001 after reaching 999.  
@@ -31,25 +31,25 @@ My plugin allows you to configure a few things in its settings:
 
    **Default**: `001`
 
-* The separation character
+* **The separation character**
 
    Here you can select the character that separates the data fields in the CSV file. The dropdown box contains the usual suspects like comma, semicolon and tab. But there are some unusual choices as well.
 
    **Default**: `;`
 
-* Quote data
+* **Quote data**
 
    If you want the data cells in the CSV file to be enclosed in quotation marks you can choose to do so here. In the dropdown box you can choose between either double quotation marks (`"`), single quotation marks (`'`) or not to quote data at all.
 
    **Default**: no quoting
 
-* Handling of CR/LF in data
+* **Handling of CR/LF in data**
 
    In some rare cases you might have return (CR) or linefeed (LF) characters inside of data fields/cells. This will break the CSV file. With this setting you can select how you want to handle these characters. You can either simply strip them, replace them with a single space character or replace them with the fixed string `[CR]`so that you later can still see that there once _was_ some kind of return character in your data.
 
    **Default**: Replace all CR & LF characters with one space
 
-* Copy to clipboard, too
+* **Copy to clipboard, too**
 
    Optionally you can copy the CSV string to the clipboard, too.
    

@@ -18,6 +18,7 @@ interface Table2CSVSettings {
    sepChar: string;
    quoteData: boolean;
    saveToClipboardToo: boolean;
+   removeCRLF: string;
 }
 
 const DEFAULT_SETTINGS: Table2CSVSettings = {
@@ -26,7 +27,8 @@ const DEFAULT_SETTINGS: Table2CSVSettings = {
    fileNumber: '001',
    sepChar: ',',
    quoteData: false,
-   saveToClipboardToo: false
+   saveToClipboardToo: false,
+   removeCRLF: 'removeCRLF-space'
 }
 
 export default class Table2CSVPlugin extends Plugin {
@@ -49,7 +51,7 @@ export default class Table2CSVPlugin extends Plugin {
                   const viewMode = view.getMode();
                   if (viewMode=="preview") {
                      // Now convert the tables
-                     const csvString = htmlToCSV(view.previewMode.containerEl, this.settings.sepChar, this.settings.quoteData);
+                     const csvString = htmlToCSV(view.previewMode.containerEl, this.settings.sepChar, this.settings.quoteData, this.settings.removeCRLF);
                      
                      // TODO: prüfen, ob csvString leer oder nicht! Nur wenn nicht, Datei anlegen etc.
                      if (csvString.length > 0) {
@@ -108,6 +110,8 @@ export default class Table2CSVPlugin extends Plugin {
 
       // This adds a settings tab so the user can configure various aspects of the plugin
       this.addSettingTab(new Table2CSVSettingTab(this.app, this));
+
+      console.log(`Table to CSV plugin: Version ${this.manifest.version} loaded.`);
    }
 
    onunload() {
@@ -123,29 +127,40 @@ export default class Table2CSVPlugin extends Plugin {
 }
 
 
-function htmlToCSV(html: HTMLElement, sep: string, quote: boolean) {
+function htmlToCSV(html: HTMLElement, sep: string, quote: boolean, removeCRLF: string) {
 	var data = [];
 	var table = html.querySelector("table"); 
-   console.log(`htmlToCSV::table: ${table}`);
+   //console.log(`htmlToCSV::table: ${table}`);
 			
    if (table) {
       var rows = table.rows;
-      console.log(`htmlToCSV::rows: ${rows}`);
+      //console.log(`htmlToCSV::rows: ${rows}`);
       for (var i = 0; i < rows.length; i++) {
          var row = [], cols = rows[i].querySelectorAll("td, th");
                
          for (var j = 0; j < cols.length; j++) {
-            if (!quote) {
-               row.push((cols[j] as HTMLElement).innerText);
-            } else {
-               row.push('"' + (cols[j] as HTMLElement).innerText + '"');
+            var cellContent = (cols[j] as HTMLElement).innerText;
+            
+            // handle the optional replacement of CR/LF characters:
+            if (removeCRLF=='removeCRLF-clear') {
+               cellContent = cellContent.replace(/(\r\n|\n|\r)/gm, "");
+            } else if (removeCRLF=='removeCRLF-space') {
+               cellContent = cellContent.replace(/(\r\n|\n|\r)/gm, " ");
+            } else if (removeCRLF=='removeCRLF-string1') {
+               cellContent = cellContent.replace(/(\r\n|\n|\r)/gm, "[CR]");
             }
+
+            // handle the quoting of data cells:
+            // for now it's just the hard-coded character "
+            if (quote) cellContent = '"' + cellContent + '"';
+
+            row.push(cellContent);
          }
                  
          data.push(row.join(sep));
       }
    }
-   console.log(`htmlToCSV::data.length: ${data.length}`);
+   //console.log(`htmlToCSV::data.length: ${data.length}`);
    if (data.length > 0)
       return data.join("\n");
    else
@@ -220,7 +235,7 @@ class Table2CSVSettingTab extends PluginSettingTab {
    
       new Setting(containerEl)
          .setName('Quote data')
-         .setDesc('Do you want quotation marks around each cell\'s data?')
+         .setDesc('Do you want quotation marks (") around each cell\'s data?')
          .addToggle( toggle => toggle
             .setValue(this.plugin.settings.quoteData)
             .onChange(async (value) => {
@@ -239,5 +254,19 @@ class Table2CSVSettingTab extends PluginSettingTab {
                this.plugin.settings.saveToClipboardToo = value;
                await this.plugin.saveSettings();
             }));
+
+      new Setting(containerEl)
+         .setName('Handling of CR/LF in data')
+         .setDesc('Chose how to handle the occurance of return and linefeed characters in data cells.')
+         .addDropdown( dropdown => dropdown
+            .addOption('removeCRLF-clear', 'Remove all CR & LF characters')
+            .addOption('removeCRLF-space', 'Replace all CR & LF characters with one space')
+            .addOption('removeCRLF-string1', 'Replace all CR & LF characters with string [CR]')
+            .setValue(this.plugin.settings.removeCRLF)
+            .onChange(async (value) => {
+               this.plugin.settings.removeCRLF = value;
+               await this.plugin.saveSettings();
+            }))
+   
    }
 }

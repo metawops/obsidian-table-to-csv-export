@@ -2,14 +2,14 @@
 // File       : main.ts
 // Author     : Stefan Wolfrum (@metawops)
 // Date       : 2022-05-27
-// Last Update: 2022-05-31
+// Last Update: 2022-06-12
 // Description: Implementation of my very first Obsidian plugin.
 //              It allows to export rendered HTML tables (i.e. from a pane in reading mode)
 //              to be exported to a CSV file and optionally to the clipboard, too.
 //              Purely based on the Obsidian sample plugin.
 // ----------------------------------------------------------------------------------------
 
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface Table2CSVSettings {
    exportPath: string;

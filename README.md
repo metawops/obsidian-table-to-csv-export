@@ -10,6 +10,22 @@ Background: The fabulous Dataview plugin for Obsidian allows to dynamically crea
 I wanted to be able to further use this created data in external applications, like MS Power BI, to create visualizations of that data.
 But the plugin can export any table into a CSV file, even those you "hard-coded" in Markdown (if that makes sense for you) or those that were created by some other plugin.
 
+## Installation
+
+As long as my plugin isn't officially added to the list of community plugins inside Obsidian itself you can install it manually in a few easy steps:
+
+1. Go into the `.obsidian` sub folder inside of your vault folder. An easy way is to click on the little folder icon on the Community plugins settings page.
+![](img/install-1.png)
+2. Create a new folder inside the `plugins` folder (you can name it however you want but maybe `table-csv-export` or sim. makes sense).
+3. Copy the two files `main.js` and `manifest.json` from the [release](https://github.com/metawops/obsidian-table-to-csv-export/releases) you downloaded into that folder.
+4. In Obsidian, click on the little reload icon in the Community plugins settings:
+![](img/install-2.png)
+5. Scroll down and switch on the new plugin:
+![](img/install-3.png)
+
+That's it, you're all set. Find the plugin's settings under the "Plugin Options" sidebar of Obsidian's settings dialog:
+![](img/install-4.png)
+
 ## Settings
 
 My plugin allows you to configure a few things in its settings:
@@ -83,6 +99,6 @@ You can reach me via Twitter, too: [@metawops](https://twitter.com/metawops)
 
 ## Sponsoring
 
-If this plugin adds value for you and you would like to help support continued development, please consider sponsoring this repository via [GitHub Sponsors](https://github.com/sponsors), [PayPal](https://paypal.me/stefanwolfrum) or [Buy me a coffee](https://www.buymeacoffee.com/metawops).
+If this plugin adds value for you and you would like to help support continued development, please consider sponsoring this repository via [GitHub Sponsors](https://github.com/sponsors/metawops), [PayPal](https://paypal.me/stefanwolfrum) or [Buy me a coffee](https://www.buymeacoffee.com/metawops).
 
 Made with ❤️ in Bonn, Germany.

@@ -85,4 +85,6 @@ You can reach me via Twitter, too: [@metawops](https://twitter.com/metawops)
 
 If this plugin adds value for you and you would like to help support continued development, please consider sponsoring this repository via [GitHub Sponsors](https://github.com/sponsors/metawops), [PayPal](https://paypal.me/stefanwolfrum) or [Buy me a coffee](https://www.buymeacoffee.com/metawops).
 
+<a href="https://www.buymeacoffee.com/metawops"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=metawops&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a>
+
 Made with ❤️ in Bonn, Germany.

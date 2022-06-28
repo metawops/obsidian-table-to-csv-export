@@ -1,13 +1,18 @@
+![](https://badgen.net/github/release/metawops/obsidian-table-to-csv-export?icon=github) ![](https://badgen.net/github/assets-dl/metawops/obsidian-table-to-csv-export?icon=github) ![](https://badgen.net/github/stars/metawops/obsidian-table-to-csv-export?icon=github&color=cyan) ![](https://badgen.net/github/watchers/metawops/obsidian-table-to-csv-export?icon=github&color=cyan) ![](https://badgen.net/github/license/metawops/obsidian-table-to-csv-export?icon=github&color=grey)
+
+![](https://badgen.net/github/closed-issues/metawops/obsidian-table-to-csv-export?icon=github) ![](https://badgen.net/github/open-issues/metawops/obsidian-table-to-csv-export?icon=github)
+
+
 # Obsidian Plugin "Table to CSV Exporter"
 
-This is my very first attempt in writing a plugin for [Obsidian](https://obsidian.md).
+This is my very first attempt in writing a plugin for [Obsidian](https://obsidian.md). I didn't even know TypeScript before (but JavaScript).
 
 ## What does it do?
 
 The purpose of this plugin is to be able to export table data from a pane in reading mode into a CSV file.
 
 Background: The fabulous [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin for Obsidian allows to dynamically create tables from an SQL-like query over your notes' metadata.
-I wanted to be able to further use this created data in external applications, like MS Power BI, to create visualizations of that data.
+I wanted to be able to further use this created data in external applications, like MS Power BI, to create visualizations of that data.  
 But the plugin can export any table into a CSV file, even those you "hard-coded" in Markdown (if that makes sense for you) or those that were created by some other plugin.
 
 ## Settings
@@ -79,12 +84,14 @@ I'd like to thank several people here. Without them this plugin wouldn't have co
 ## Contact
 
 Please leave feedback here in the GitHub discussions or file a new issue if you found a bug or have a feature request.
-You can reach me via Twitter, too: [@metawops](https://twitter.com/metawops)
+You can reach me via Twitter, too:  
+[![](https://badgen.net/twitter/follow/metawops?icon=twitter)](https://twitter.com/metawops)
+
 
 ## Sponsoring
 
 If this plugin adds value for you and you would like to help support continued development, please consider sponsoring this repository via [GitHub Sponsors](https://github.com/sponsors/metawops), [PayPal](https://paypal.me/stefanwolfrum) or [Buy me a coffee](https://www.buymeacoffee.com/metawops).
 
-<a href="https://www.buymeacoffee.com/metawops"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=metawops&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a>
+[![](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=&slug=metawops&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff)](https://www.buymeacoffee.com/metawops)
 
 Made with ❤️ in Bonn, Germany.

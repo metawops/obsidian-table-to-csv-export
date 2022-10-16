@@ -78,7 +78,7 @@ Of course, there's always room for improvement. **As of version 0.1.4, there are
 I'd like to thank several people here. Without them this plugin wouldn't have come to live.
 
 * [Edmund Gröpl](https://twitter.com/groepl) – for bringing up the problem at all and his encouragement over all the years.
-* [Marcus Olsson](https://github.com/marcusolsson) – for starting the [Obsidian Plugin Developer Docs](https://marcus.se.net/obsidian-plugin-docs/) project which I highly recommended, especially for beginners. He's on Twitter, too: [@marcusolsson](https://twitter.com/marcusolsson)
+* [Marcus Olsson](https://github.com/marcusolsson) – for starting the [Obsidian Plugin Developer Docs](https://marcus.se.net/obsidian-plugin-docs/) project which I highly recommend, especially for beginners. He's on Twitter, too: [@marcusolsson](https://twitter.com/marcusolsson)
 * [Johannes Theiner](https://github.com/joethei) – a very kind and helpful user over at the official Obsidian Discord server. I met him in the `#plugin-dev` channel and his answers to my questions were very helpful. He's also on Twitter: [@joethei](https://twitter.com/joethei)
 
 ## Contact

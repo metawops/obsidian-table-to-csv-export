@@ -10,6 +10,7 @@
 // ----------------------------------------------------------------------------------------
 
 import { App, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Table2CSVSettings {
   exportPath: string;
@@ -37,6 +38,36 @@ export default class Table2CSVPlugin extends Plugin {
   async onload() {
 
     await this.loadSettings();
+
+    this.addCommand({
+      id: 'export-to-markdown',
+      name: "Export table to markdown",
+      checkCallback: (checking: boolean) => {
+
+        console.log("markdown command")
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+
+        if (view) {
+          if (!checking) {
+            const rows = htmlToRows(view.previewMode.containerEl, this.settings.quoteDataChar, this.settings.removeCRLF)
+            console.log("rows:")
+            console.log(rows)
+            const markdown = generateMarkdown(rows)
+            console.log("Markdown: ")
+            console.log(markdown)
+            writeToFile(`${uuidv4()}.md`, markdown)
+          }
+        }
+      }
+    })
+
+    this.addCommand({
+      id: 'obsidian-table-to-csv-exporter',
+      name: 'Export table to Markdown2',
+      checkCallback: (checking: boolean) => {
+        console.log("print test")
+      }
+    });
 
     this.addCommand({
       id: 'obsidian-table-to-csv-exporter',
@@ -126,6 +157,78 @@ export default class Table2CSVPlugin extends Plugin {
   }
 }
 
+function writeToFile(filename: string, content: string) {
+  this.app.vault.create(filename, content)
+
+  new Notice(`The file ${filename} was successfully created in your vault.`)
+}
+
+function generateMarkdown(rows: string[][]) {
+  const head = arrayDataToMarkdownRow(rows[0])
+  const seperator = generateSeperator(rows[0].length)
+  const contents = generateContent(rows.slice(1))
+  return head + seperator + contents
+}
+
+function generateContent(rows: string[][]) {
+  const contents = []
+  for (let index = 0; index < rows.length; index++) {
+    const row = rows[index];
+
+    contents.push(arrayDataToMarkdownRow(row))
+  }
+  return contents.join("")
+}
+
+function generateSeperator(colNumber: number) {
+  const a = []
+  for (let index = 0; index < colNumber; index++) {
+    a.push("---")
+  }
+  return arrayDataToMarkdownRow(a)
+}
+
+
+function arrayDataToMarkdownRow(rowData: string[]) {
+  return "|" + rowData.join("|") + '|\n'
+}
+
+function htmlToRows(html: HTMLElement, quoteChar: string, removeCRLF: string) {
+  var data = [];
+  var table = html.querySelector("table");
+
+  if (table) {
+    var rows = table.rows;
+    for (var i = 0; i < rows.length; i++) {
+      var row = [], cols = rows[i].querySelectorAll("td, th");
+
+      for (var j = 0; j < cols.length; j++) {
+        var cellContent = (cols[j] as HTMLElement).innerText;
+
+        // handle the optional replacement of CR/LF characters:
+        if (removeCRLF == 'removeCRLF-clear') {
+          cellContent = cellContent.replace(/(\r\n|\n|\r)/gm, "");
+        } else if (removeCRLF == 'removeCRLF-space') {
+          cellContent = cellContent.replace(/(\r\n|\n|\r)/gm, " ");
+        } else if (removeCRLF == 'removeCRLF-string1') {
+          cellContent = cellContent.replace(/(\r\n|\n|\r)/gm, "[CR]");
+        }
+
+        // handle the quoting of data cells:
+        // for now it's just the hard-coded character "
+        if (quoteChar == 'quoteChar-doubleQuotes') {
+          cellContent = '"' + cellContent + '"';
+        } else if (quoteChar == 'quoteChar-singleQuotes') {
+          cellContent = "'" + cellContent + "'";
+        }
+        row.push(cellContent);
+      }
+
+      data.push(row);
+    }
+  }
+  return data;
+}
 
 function htmlToCSV(html: HTMLElement, sepMode: string, quoteChar: string, removeCRLF: string) {
   var data = [];

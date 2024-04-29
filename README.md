@@ -3,7 +3,7 @@
 ![](https://badgen.net/github/closed-issues/metawops/obsidian-table-to-csv-export?icon=github) ![](https://badgen.net/github/open-issues/metawops/obsidian-table-to-csv-export?icon=github)
 
 
-# Obsidian Plugin "Table to CSV Exporter" 
+# Obsidian Plugin "Table to CSV Exporter"
 
 This is my very first attempt in writing a plugin for [Obsidian](https://obsidian.md). I didn't even know TypeScript before (but JavaScript).
 

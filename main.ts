@@ -9,7 +9,7 @@
 //              Purely based on the Obsidian sample plugin.
 // ----------------------------------------------------------------------------------------
 
-import { App, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, Modal } from 'obsidian';
 
 interface Table2CSVSettings {
    exportPath: string;
@@ -19,6 +19,119 @@ interface Table2CSVSettings {
    quoteDataChar: string;
    saveToClipboardToo: boolean;
    removeCRLF: string;
+}
+
+class SelectTablesModal extends Modal {
+   tables: NodeListOf<HTMLTableElement>;
+   plugin: Table2CSVPlugin;
+   result: number[];
+
+   constructor(app: App, plugin: Table2CSVPlugin, tables: NodeListOf<HTMLTableElement>) {
+      super(app);
+      this.plugin = plugin;
+      this.tables = tables;
+      this.result = [];
+   }
+
+   onOpen() {
+      const { contentEl } = this;
+      contentEl.createEl("h2", { text: "Select tables to export" });
+
+      this.tables.forEach((table, index) => {
+         const tableContainer = contentEl.createDiv({ cls: "table-container" });
+         tableContainer.style.border = "1px solid var(--background-modifier-border)";
+         tableContainer.style.padding = "10px";
+         tableContainer.style.margin = "10px 0";
+         tableContainer.style.maxHeight = "150px";
+         tableContainer.style.overflowY = "auto";
+
+         const checkbox = tableContainer.createEl("input", { type: "checkbox" });
+         checkbox.id = `table-checkbox-${index}`;
+         checkbox.dataset.tableIndex = index.toString();
+
+         const label = tableContainer.createEl("label", { text: `Table ${index + 1}` });
+         label.htmlFor = `table-checkbox-${index}`;
+
+         const preview = tableContainer.createEl("div");
+         preview.appendChild(table.cloneNode(true));
+
+         checkbox.addEventListener("change", (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            const tableIndex = parseInt(target.dataset.tableIndex || "0", 10);
+            if (target.checked) {
+               if (!this.result.includes(tableIndex)) {
+                  this.result.push(tableIndex);
+               }
+            } else {
+               const resultIndex = this.result.indexOf(tableIndex);
+               if (resultIndex > -1) {
+                  this.result.splice(resultIndex, 1);
+               }
+            }
+         });
+      });
+
+      const buttonContainer = contentEl.createDiv();
+      const exportButton = buttonContainer.createEl("button", { text: "Export Selected" });
+      exportButton.addEventListener("click", () => {
+         this.close();
+         this.onExport(this.result);
+      });
+   }
+
+   onExport(selectedIndices: number[]) {
+      if (selectedIndices.length === 0) {
+         new Notice("No tables selected.");
+         return;
+      }
+
+      selectedIndices.sort((a, b) => a - b); // sort indices to process in order
+
+      const csvStrings = selectedIndices.map(index => {
+         const table = this.tables[index];
+         return tableToCSV(table, this.plugin.settings.sepChar, this.plugin.settings.quoteDataChar, this.plugin.settings.removeCRLF);
+      });
+
+      const combinedCsv = csvStrings.join("\n\n");
+
+      if (combinedCsv.length > 0) {
+         const filename = `${this.plugin.settings.baseFilename}-${this.plugin.settings.fileNumber}.csv`;
+         this.plugin.app.vault.create(filename, combinedCsv)
+            .then(() => {
+               let fn: number = +this.plugin.settings.fileNumber;
+               fn++;
+               if (fn == 1000) fn = 1;
+               let newFileNumberString: string = fn + "";
+               while (newFileNumberString.length < 3) newFileNumberString = "0" + newFileNumberString;
+               this.plugin.settings.fileNumber = newFileNumberString;
+               this.plugin.saveSettings();
+
+               if (this.plugin.settings.saveToClipboardToo) {
+                  navigator.clipboard
+                     .writeText(combinedCsv)
+                     .then(() => {
+                        new Notice(`The file ${filename} was successfully created in your vault. The contents was also copied to the clipboard.`);
+                     })
+                     .catch((err) => {
+                        new Notice('There was an error with copying the contents to the clipboard.');
+                     });
+               } else {
+                  new Notice(`The file ${filename} was successfully created in your vault.`);
+               }
+            })
+            .catch((error: any) => {
+               const errorMessage = `Error: ${error.message}`;
+               new Notice(errorMessage);
+            });
+      } else {
+         new Notice(`No data to export.`);
+      }
+   }
+
+   onClose() {
+      const { contentEl } = this;
+      contentEl.empty();
+   }
 }
 
 const DEFAULT_SETTINGS: Table2CSVSettings = {
@@ -50,49 +163,14 @@ export default class Table2CSVPlugin extends Plugin {
                   // Here we can actually start with our work
                   const viewMode = view.getMode();
                   if (viewMode=="preview") {
-                     // Now convert the tables
-                     const csvString = htmlToCSV(view.previewMode.containerEl, this.settings.sepChar, this.settings.quoteDataChar, this.settings.removeCRLF);
+                     const tables = view.previewMode.containerEl.querySelectorAll("table");
 
-                     // If csvString is not empty, create file:
-                     if (csvString.length > 0) {
-                        const filename = `${this.settings.baseFilename}-${this.settings.fileNumber}.csv`;
-                        this.app.vault.create(filename, csvString)
-                           .then( () => {
-                              // increment the file number addition string
-                              // first, convert the current string to a number:
-                              let fn: number = +this.settings.fileNumber;
-                              // then increment the number:
-                              fn++;
-                              // don't allow more that 999; restart with 001 in that case:
-                              if (fn==1000) fn = 1;
-                              // convert the number to a string again:
-                              let newFileNumberString: string = fn + "";
-                              // add leading zeroes to the string:
-                              while (newFileNumberString.length < 3) newFileNumberString = "0" + newFileNumberString;
-                              this.settings.fileNumber = newFileNumberString;
-                              if (this.settings.saveToClipboardToo) {
-                                 navigator.clipboard
-                                    .writeText(csvString)
-                                    .then(() => {                                    
-                                       new Notice(`The file ${filename} was successfully created in your vault. The contents was also copied to the clipboard.`);
-                                    })
-                                    .catch((err) => {
-                                       new Notice('There was an error with copying the contents to the clipboard.');
-                                    });
-                                 
-                              } else {
-                                 new Notice(`The file ${filename} was successfully created in your vault.`)
-                              }
-                           })
-
-                           .catch( (error) => {
-                              const errorMessage = `Error: ${error.message}`;
-                              new Notice(errorMessage);
-                           })
-                     }
-                     else {
+                     if (tables.length === 0) {
                         new Notice(`No table was found. No CSV file was written.`);
+                        return;
                      }
+
+                     new SelectTablesModal(this.app, this, tables).open();
 
                   }
                   else {
@@ -127,11 +205,8 @@ export default class Table2CSVPlugin extends Plugin {
 }
 
 
-function htmlToCSV(html: HTMLElement, sepMode: string, quoteChar: string, removeCRLF: string) {
+function tableToCSV(table: HTMLTableElement, sepMode: string, quoteChar: string, removeCRLF: string) {
 	var data = [];
-	var table = html.querySelector("table"); 
-   //console.log(`htmlToCSV::table: ${table}`);
-			
    if (table) {
       var rows = table.rows;
       //console.log(`htmlToCSV::rows: ${rows}`);

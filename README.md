@@ -68,10 +68,9 @@ The plugin works on mobile, too. (Tested on iPadOS only, though.)
 
 ## Current limitations
 
-Of course, there's always room for improvement. **As of version 0.1.4, there are the following limitations/restrictions**:
+**As of the latest version (0.1.5)**, there are the following limitations/restrictions:
 
-* The plugin currently exports only the first table that it finds in the reading mode of a note.
-* The plugin saves the CSV file directly into you vault's main folder. A feature to select another folder inside your vault will be added later.
+* The plugin saves the CSV file directly into your vault's main folder. A feature to select another folder inside your vault will be added later.
 
 ## Thanks
 
